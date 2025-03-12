@@ -75,8 +75,52 @@ typedef enum Icu_ModeType Icu_ModeType;
  * Index : 8.2.2 [SWS_Icu_00278]
  * Description : Numeric identifier of an ICU channel.
  */
-typedef uint8 Icu_ChannelType;
-// Define ICU channels
+typedef uint16 Icu_ChannelType;
+// FTM0
+#define FTM_0_CHANNEL_0             (Icu_ChannelType)0x00
+#define FTM_0_CHANNEL_1             (Icu_ChannelType)0x01
+#define FTM_0_CHANNEL_2             (Icu_ChannelType)0x02
+#define FTM_0_CHANNEL_3             (Icu_ChannelType)0x03
+#define FTM_0_CHANNEL_4             (Icu_ChannelType)0x04
+#define FTM_0_CHANNEL_5             (Icu_ChannelType)0x05
+#define FTM_0_CHANNEL_6             (Icu_ChannelType)0x06
+#define FTM_0_CHANNEL_7             (Icu_ChannelType)0x07
+
+// FTM1
+#define FTM_1_CHANNEL_0             (Icu_ChannelType)0x08
+#define FTM_1_CHANNEL_1             (Icu_ChannelType)0x09
+#define FTM_1_CHANNEL_2             (Icu_ChannelType)0x0A
+#define FTM_1_CHANNEL_3             (Icu_ChannelType)0x0B
+#define FTM_1_CHANNEL_4             (Icu_ChannelType)0x0C
+#define FTM_1_CHANNEL_5             (Icu_ChannelType)0x0D
+#define FTM_1_CHANNEL_6             (Icu_ChannelType)0x0E
+#define FTM_1_CHANNEL_7             (Icu_ChannelType)0x0F
+
+// FTM2
+#define FTM_2_CHANNEL_0             (Icu_ChannelType)0x10
+#define FTM_2_CHANNEL_1             (Icu_ChannelType)0x11
+#define FTM_2_CHANNEL_2             (Icu_ChannelType)0x12
+#define FTM_2_CHANNEL_3             (Icu_ChannelType)0x13
+#define FTM_2_CHANNEL_4             (Icu_ChannelType)0x14
+#define FTM_2_CHANNEL_5             (Icu_ChannelType)0x15
+#define FTM_2_CHANNEL_6             (Icu_ChannelType)0x16
+#define FTM_2_CHANNEL_7             (Icu_ChannelType)0x17
+
+// FTM3
+#define FTM_3_CHANNEL_0             (Icu_ChannelType)0x18
+#define FTM_3_CHANNEL_1             (Icu_ChannelType)0x19
+#define FTM_3_CHANNEL_2             (Icu_ChannelType)0x1A
+#define FTM_3_CHANNEL_3             (Icu_ChannelType)0x1B
+#define FTM_3_CHANNEL_4             (Icu_ChannelType)0x1C
+#define FTM_3_CHANNEL_5             (Icu_ChannelType)0x1D
+#define FTM_3_CHANNEL_6             (Icu_ChannelType)0x1E
+#define FTM_3_CHANNEL_7             (Icu_ChannelType)0x1F
+
+/*
+ * Index : 10.2.9 [ECUC_Icu_00220] 
+ * Description : This parameter contains the number of Channels configured.
+ */
+#define ICU_MAX_CHANNEL             (Icu_ChannelType)32U
 
 /*
  * Index : 8.2.3 [SWS_Icu_00279]
@@ -89,14 +133,79 @@ enum Icu_InputStateType{
 typedef enum Icu_InputStateType Icu_InputStateType;
 
 /*
+ * Type that absrtact the prescaler value (divide-by 1, 2, 4, 8, 16, 32, 64, or 128)
+*/
+typedef uint8 Icu_ClockPrescalerType;
+/*
  * Index : 8.2.4 [SWS_Icu_00280]
  * Description : This type contains initialization data.
  */
 
 struct Icu_ConfigType {
-    // Hw dependent
+    uint8 Icu_NumberOfChannels;
+    Icu_ChannelConfigType* Icu_ChannelConfig;
 };
 typedef struct Icu_ConfigType Icu_ConfigType;
+
+struct Icu_ChannelConfigType{
+    Icu_ChannelType Icu_ChannelId;
+    Icu_ActivationType Icu_Activation;
+    Icu_MeasurementModeType Icu_MeasurementMode;
+    Icu_ClockPrescalerType Icu_ClockPrescaler;
+    IcuSignalEdgeDetectionType IcuSignalEdgeDetection;
+    IcuSignalMeasurementType IcuSignalMeasurement;
+    IcuTimestampMeasurementType IcuTimestampMeasurement;
+    IcuWakeupType IcuWakeup;
+    boolean Icu_FilterEnable;
+    boolean Icu_InterruptEnable;
+};
+
+typedef struct Icu_ChannelConfigType Icu_ChannelConfigType;
+
+/*
+ * Index : 10.2.5 [ECUC_Icu_00021]
+ * Description : This container contains the configuration (parameters) in case the measurement 
+ *               mode is "IcuSignalEdgeDetection".
+ */
+struct IcuSignalEdgeDetectionType{
+    //Pointer to a function that gets called when an edge is detected.
+    void (*IcuSignalNotification)(void);
+};
+typedef struct IcuSignalEdgeDetectionType IcuSignalEdgeDetectionType;
+
+/*
+ * Index : 10.2.6 [ECUC_Icu_00226]
+ * Description : This container contains the configuration (parameters) in case the measurement 
+ *               mode is "IcuSignalMeasurement" 
+ */
+struct IcuSignalMeasurementType{
+    Icu_SignalMeasurementPropertyType IcuSignalMeasurementProperty;
+};
+typedef struct IcuSignalMeasurementType IcuSignalMeasurementType;
+
+/*
+ * Index : 10.2.7 [ECUC_Icu_00228]
+ * Description : This container contains the configuration (parameters) in case the measurement 
+ *               mode is "IcuTimestamp"  
+ */
+struct IcuTimestampMeasurementType{
+    // Notification function if the number of requested timestamps (Notification interval > 0) are acquired.
+    void (*IcuTimestampNotification)(void);
+    Icu_TimestampBufferType IcuTimestampMeasurementProperty;
+};
+typedef struct IcuTimestampMeasurementType IcuTimestampMeasurementType;
+boolean IcuWakeupCapability;
+
+/*
+ * Index : 10.2.8 [ECUC_Icu_00126]
+ * Description : This container contains the configuration (parameters) needed to configure a 
+ *               wakeup capable channel
+ */
+struct IcuWakeupType{
+    EcuM_WakeupSourceType IcuChannelWakeupInfo;
+    boolean IcuWakeupCapability;
+};
+typedef struct IcuWakeupType IcuWakeupType;
 
 /*
  * Index : 8.2.5 [SWS_Icu_00289]
@@ -123,7 +232,7 @@ struct Icu_DutyCycleType {
     Icu_ValueType ActiveTime;
     Icu_ValueType PeriodTime;
 };
-typedef Icu_DutyCycleType Icu_DutyCycleType;
+typedef struct Icu_DutyCycleType Icu_DutyCycleType;
 
 /*
  * Index : 8.2.8 [SWS_Icu_00292]
@@ -135,7 +244,7 @@ typedef uint8 Icu_IndexType;
  * Index : 8.2.9 [SWS_Icu_00293]
  * Description : Type, to abstract the return value of the service Icu_GetEdgeNumbers().
  */
-typedef uint8 cu_EdgeNumberType;
+typedef uint8 Icu_EdgeNumberType;
 
 
 /*
@@ -167,9 +276,14 @@ typedef enum Icu_SignalMeasurementPropertyType Icu_SignalMeasurementPropertyType
  * Description : Definition of the timestamp measurement property type.
  */
 enum Icu_TimestampBufferType {
-    CU_LINEAR_BUFFER,
+    ICU_LINEAR_BUFFER,
     ICU_CIRCULAR_BUFFER 
 };
-typedef Icu_TimestampBufferType Icu_TimestampBufferType;
+typedef enum Icu_TimestampBufferType Icu_TimestampBufferType;
 
+/*
+ * Index : 8.3.19 [SWS_Icu_00207]
+ * Description : type that abstract the return type of the Icu_GetEdgeNumbers() service .
+ */
+typedef uint32 Icu_EdgeNumberType;
 #endif /* ICU_TYPES_H */
