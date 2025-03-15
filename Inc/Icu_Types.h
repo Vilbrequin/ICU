@@ -116,6 +116,13 @@ typedef uint16 Icu_ChannelType;
 #define FTM_3_CHANNEL_6             (Icu_ChannelType)0x1E
 #define FTM_3_CHANNEL_7             (Icu_ChannelType)0x1F
 
+typedef uint8 Icu_FTM_ID;
+#define FTM_0                       (Icu_FTM_ID)0x00
+#define FTM_1                       (Icu_FTM_ID)0x01
+#define FTM_2                       (Icu_FTM_ID)0x02
+#define FTM_3                       (Icu_FTM_ID)0x03
+
+#define CHANNELS_PER_INSTANCE       (uint8)0x08
 /*
  * Index : 10.2.9 [ECUC_Icu_00220] 
  * Description : This parameter contains the number of Channels configured.
@@ -136,6 +143,15 @@ typedef enum Icu_InputStateType Icu_InputStateType;
  * Type that absrtact the prescaler value (divide-by 1, 2, 4, 8, 16, 32, 64, or 128)
 */
 typedef uint8 Icu_ClockPrescalerType;
+#define ICU_CLK_PRESCALER_0                 (Icu_ClockPrescalerType)1U
+#define ICU_CLK_PRESCALER_1                 (Icu_ClockPrescalerType)2U
+#define ICU_CLK_PRESCALER_2                 (Icu_ClockPrescalerType)4U
+#define ICU_CLK_PRESCALER_3                 (Icu_ClockPrescalerType)8U
+#define ICU_CLK_PRESCALER_4                 (Icu_ClockPrescalerType)16U
+#define ICU_CLK_PRESCALER_5                 (Icu_ClockPrescalerType)32U
+#define ICU_CLK_PRESCALER_6                 (Icu_ClockPrescalerType)64U
+#define ICU_CLK_PRESCALER_7                 (Icu_ClockPrescalerType)128U
+
 /*
  * Index : 8.2.4 [SWS_Icu_00280]
  * Description : This type contains initialization data.
@@ -149,12 +165,14 @@ typedef struct Icu_ConfigType Icu_ConfigType;
 
 struct Icu_ChannelConfigType{
     Icu_ChannelType Icu_ChannelId;
-    Icu_ActivationType Icu_Activation;
     Icu_MeasurementModeType Icu_MeasurementMode;
+    Icu_ActivationType Icu_Activation;
     Icu_ClockPrescalerType Icu_ClockPrescaler;
     IcuSignalEdgeDetectionType IcuSignalEdgeDetection;
     IcuSignalMeasurementType IcuSignalMeasurement;
     IcuTimestampMeasurementType IcuTimestampMeasurement;
+    Icu_InputStateType Icu_InputState;
+    Icu_ModeType Icu_Mode;
     IcuWakeupType IcuWakeup;
     boolean Icu_FilterEnable;
     boolean Icu_InterruptEnable;

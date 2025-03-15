@@ -20,6 +20,9 @@
 #define ICU_MODULE_MINOR_VERSION                   (0U)
 #define ICU_MODULE_PATCH_VERSION                   (0U)
 
+#define ICU_NOT_INITIALIZED                        (0U)
+#define ICU_INITIALIZED                            (1U)
+
 /*********************************************************************************************************
  *                                              API Service Id Macros                                    *
  *********************************************************************************************************/
@@ -296,9 +299,9 @@ void Icu_DeInit (void);
  * Reentrancy: Non Reentrant
  * Parameters (in): Mode:
 *                   - ICU_MODE_NORMAL: Normal operation, all used interrupts are enabled 
-                    according to the notification requests
-                    - ICU_MODE_SLEEP: Reduced power mode. In sleep mode only those notifications
-                    are available which are configured as wakeup capable.                      
+*                     according to the notification requests
+*                   - ICU_MODE_SLEEP: Reduced power mode. In sleep mode only those notifications
+*                     are available which are configured as wakeup capable.                      
  * Parameters (inout): None
  * Parameters (out): None
  * Return value: None

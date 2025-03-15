@@ -1,6 +1,22 @@
 #ifndef ICU_REGS_H_
 #define ICU_REGS_H
 
+// PCC Base Address
+#define PCC_BASE_ADDRESS                    0x40065000
+#define PCC_CGC_BIT                         30U /* Clock Gate Control: enables the clock for the peripheral */
+
+#define PCC_FTM_0_OFFSET                    0xE0
+#define PCC_FTM_0                           (PCC_BASE_ADDRESS + PCC_FTM_0_OFFSET)
+
+#define PCC_FTM_1_OFFSET                    0xE4
+#define PCC_FTM_1                           (PCC_BASE_ADDRESS + PCC_FTM_1_OFFSET)
+
+#define PCC_FTM_2_OFFSET                    0xE8
+#define PCC_FTM_2                           (PCC_BASE_ADDRESS + PCC_FTM_2_OFFSET)
+
+#define PCC_FTM_3_OFFSET                    0x98
+#define PCC_FTM_3                           (PCC_BASE_ADDRESS + PCC_FTM_3_OFFSET)
+
 // FTM Instances Base Addresses
 #define FTM_0_BASSE_ADDRESS                 0x40038000
 #define FTM_1_BASSE_ADDRESS                 0x40039000
@@ -38,128 +54,6 @@ The MOD register defines the upper limite for the FTM counter.
 #define FTM_1_MOD                           (FTM_1_BASSE_ADDRESS + MOD_OFFSET)
 #define FTM_2_MOD                           (FTM_2_BASSE_ADDRESS + MOD_OFFSET)
 #define FTM_3_MOD                           (FTM_3_BASSE_ADDRESS + MOD_OFFSET)
-
-/*
-Channel (n) Status And Control (C0SC - C7SC)
-CnSC contains channel (n) status bits and control bits that select the channel (n) mode
-and its functionality.
-*/
-// Channel 0 Status And Control
-#define C0SC_OFFSET                         0x0C + (0 * 0x08)
-#define FTM_0_C0SC                          (FTM_0_BASSE_ADDRESS + C0SC_OFFSET)
-#define FTM_1_C0SC                          (FTM_1_BASSE_ADDRESS + C0SC_OFFSET)
-#define FTM_2_C0SC                          (FTM_2_BASSE_ADDRESS + C0SC_OFFSET)
-#define FTM_3_C0SC                          (FTM_3_BASSE_ADDRESS + C0SC_OFFSET)
-
-// Channel 1 Status And Control
-#define C1SC_OFFSET                         0x0C + (1 * 0x08)
-#define FTM_0_C1SC                          (FTM_0_BASSE_ADDRESS + C1SC_OFFSET)
-#define FTM_1_C1SC                          (FTM_1_BASSE_ADDRESS + C1SC_OFFSET)
-#define FTM_2_C1SC                          (FTM_2_BASSE_ADDRESS + C1SC_OFFSET)
-#define FTM_3_C1SC                          (FTM_3_BASSE_ADDRESS + C1SC_OFFSET)
-
-// Channel 2 Status And Control
-#define C2SC_OFFSET                         0x0C + (2 * 0x08)
-#define FTM_0_C2SC                          (FTM_0_BASSE_ADDRESS + C2SC_OFFSET)
-#define FTM_1_C2SC                          (FTM_1_BASSE_ADDRESS + C2SC_OFFSET)
-#define FTM_2_C2SC                          (FTM_2_BASSE_ADDRESS + C2SC_OFFSET)
-#define FTM_3_C2SC                          (FTM_3_BASSE_ADDRESS + C2SC_OFFSET)
-
-// Channel 3 Status And Control
-#define C3SC_OFFSET                         0x0C + (3 * 0x08)
-#define FTM_0_C3SC                          (FTM_0_BASSE_ADDRESS + C3SC_OFFSET)
-#define FTM_1_C3SC                          (FTM_1_BASSE_ADDRESS + C3SC_OFFSET)
-#define FTM_2_C3SC                          (FTM_2_BASSE_ADDRESS + C3SC_OFFSET)
-#define FTM_3_C3SC                          (FTM_3_BASSE_ADDRESS + C3SC_OFFSET)
-
-// Channel 4 Status And Control
-#define C4SC_OFFSET                         0x0C + (4 * 0x08)
-#define FTM_0_C4SC                          (FTM_0_BASSE_ADDRESS + C4SC_OFFSET)
-#define FTM_1_C4SC                          (FTM_1_BASSE_ADDRESS + C4SC_OFFSET)
-#define FTM_2_C4SC                          (FTM_2_BASSE_ADDRESS + C4SC_OFFSET)
-#define FTM_3_C4SC                          (FTM_3_BASSE_ADDRESS + C4SC_OFFSET)
-
-// Channel 5 Status And Control
-#define C5SC_OFFSET                         0x0C + (5 * 0x08)
-#define FTM_0_C5SC                          (FTM_0_BASSE_ADDRESS + C5SC_OFFSET)
-#define FTM_1_C5SC                          (FTM_1_BASSE_ADDRESS + C5SC_OFFSET)
-#define FTM_2_C5SC                          (FTM_2_BASSE_ADDRESS + C5SC_OFFSET)
-#define FTM_3_C5SC                          (FTM_3_BASSE_ADDRESS + C5SC_OFFSET)
-
-// Channel 6 Status And Control
-#define C6SC_OFFSET                         0x0C + (6 * 0x08)
-#define FTM_0_C6SC                          (FTM_0_BASSE_ADDRESS + C6SC_OFFSET)
-#define FTM_1_C6SC                          (FTM_1_BASSE_ADDRESS + C6SC_OFFSET)
-#define FTM_2_C6SC                          (FTM_2_BASSE_ADDRESS + C6SC_OFFSET)
-#define FTM_3_C6SC                          (FTM_3_BASSE_ADDRESS + C6SC_OFFSET)
-
-// Channel 7 Status And Control
-#define C7SC_OFFSET                         0x0C + (7 * 0x08)
-#define FTM_0_C7SC                          (FTM_0_BASSE_ADDRESS + C7SC_OFFSET)
-#define FTM_1_C7SC                          (FTM_1_BASSE_ADDRESS + C7SC_OFFSET)
-#define FTM_2_C7SC                          (FTM_2_BASSE_ADDRESS + C7SC_OFFSET)
-#define FTM_3_C7SC                          (FTM_3_BASSE_ADDRESS + C7SC_OFFSET)
-
-/*
-Channel (n) Value (C0V - C7V)
-The CnV register contain the captures FTM counter value.
-*/
-// Channel 0 Value
-#define C0V_OFFSET                          0x10 + (0 * 0x08)
-#define FTM_0_C0V                           (FTM_0_BASSE_ADDRESS + C0V_OFFSET)
-#define FTM_1_C0V                           (FTM_1_BASSE_ADDRESS + C0V_OFFSET)
-#define FTM_2_C0V                           (FTM_2_BASSE_ADDRESS + C0V_OFFSET)
-#define FTM_3_C0V                           (FTM_3_BASSE_ADDRESS + C0V_OFFSET)
-
-// Channel 1 Value
-#define C1V_OFFSET                          0x10 + (1 * 0x08)
-#define FTM_0_C1V                           (FTM_0_BASSE_ADDRESS + C1V_OFFSET)
-#define FTM_1_C1V                           (FTM_1_BASSE_ADDRESS + C1V_OFFSET)
-#define FTM_2_C1V                           (FTM_2_BASSE_ADDRESS + C1V_OFFSET)
-#define FTM_3_C1V                           (FTM_3_BASSE_ADDRESS + C1V_OFFSET)
-
-// Channel 2 Value
-#define C2V_OFFSET                          0x10 + (2 * 0x08)
-#define FTM_0_C2V                           (FTM_0_BASSE_ADDRESS + C2V_OFFSET)
-#define FTM_1_C2V                           (FTM_1_BASSE_ADDRESS + C2V_OFFSET)
-#define FTM_2_C2V                           (FTM_2_BASSE_ADDRESS + C2V_OFFSET)
-#define FTM_3_C2V                           (FTM_3_BASSE_ADDRESS + C2V_OFFSET)
-
-// Channel 3 Value
-#define C3V_OFFSET                          0x10 + (3 * 0x08)
-#define FTM_0_C3V                           (FTM_0_BASSE_ADDRESS + C3V_OFFSET)
-#define FTM_1_C3V                           (FTM_1_BASSE_ADDRESS + C3V_OFFSET)
-#define FTM_2_C3V                           (FTM_2_BASSE_ADDRESS + C3V_OFFSET)
-#define FTM_3_C3V                           (FTM_3_BASSE_ADDRESS + C3V_OFFSET)
-
-// Channel 4 Value
-#define C4V_OFFSET                          0x10 + (4 * 0x08)
-#define FTM_0_C4V                           (FTM_0_BASSE_ADDRESS + C4V_OFFSET)
-#define FTM_1_C4V                           (FTM_1_BASSE_ADDRESS + C4V_OFFSET)
-#define FTM_2_C4V                           (FTM_2_BASSE_ADDRESS + C4V_OFFSET)
-#define FTM_3_C4V                           (FTM_3_BASSE_ADDRESS + C4V_OFFSET)
-
-// Channel 5 Value
-#define C5V_OFFSET                          0x10 + (5 * 0x08)
-#define FTM_0_C5V                           (FTM_0_BASSE_ADDRESS + C5V_OFFSET)
-#define FTM_1_C5V                           (FTM_1_BASSE_ADDRESS + C5V_OFFSET)
-#define FTM_2_C5V                           (FTM_2_BASSE_ADDRESS + C5V_OFFSET)
-#define FTM_3_C5V                           (FTM_3_BASSE_ADDRESS + C5V_OFFSET)
-
-// Channel 6 Value
-#define C6V_OFFSET                          0x10 + (6 * 0x08)
-#define FTM_0_C6V                           (FTM_0_BASSE_ADDRESS + C6V_OFFSET)
-#define FTM_1_C6V                           (FTM_1_BASSE_ADDRESS + C6V_OFFSET)
-#define FTM_2_C6V                           (FTM_2_BASSE_ADDRESS + C6V_OFFSET)
-#define FTM_3_C6V                           (FTM_3_BASSE_ADDRESS + C6V_OFFSET)
-
-// Channel 7 Value
-#define C7V_OFFSET                          0x10 + (7 * 0x08)
-#define FTM_0_C7V                           (FTM_0_BASSE_ADDRESS + C7V_OFFSET)
-#define FTM_1_C7V                           (FTM_1_BASSE_ADDRESS + C7V_OFFSET)
-#define FTM_2_C7V                           (FTM_2_BASSE_ADDRESS + C7V_OFFSET)
-#define FTM_3_C7V                           (FTM_3_BASSE_ADDRESS + C7V_OFFSET)
-
 
 /*
 Conter Initial Value (CNTIN)
@@ -209,5 +103,16 @@ value is validated. It is then transmitted as a pulse to the edge detector.
 #define FTM_2_FILTER                        (FTM_2_BASSE_ADDRESS + FILTER_OFFSET)
 #define FTM_3_FILTER                        (FTM_3_BASSE_ADDRESS + FILTER_OFFSET)
 
+/*
+This register contains the configuration bits for each pair of channels.
+DECAPEN: Dual Edge Capture Enable, Enables Dual Edge Capture Mode, which captures timestamps on both rising and falling edges
+MCOMBINE: Modified Combine Mode, used in PWM and Combined Mode, where two channels are linked together to generate synchronized signals
+COMBINE: Combine Channels, Allows two adjacent channels to be combined for complex PWM generation.
+*/
+#define COMBINE_OFFSET                  0x64
+#define FTM_0_COMBINE                       (FTM_0_BASSE_ADDRESS + COMBINE_OFFSET)
+#define FTM_1_COMBINE                       (FTM_1_BASSE_ADDRESS + COMBINE_OFFSET)
+#define FTM_2_COMBINE                       (FTM_2_BASSE_ADDRESS + COMBINE_OFFSET)
+#define FTM_3_COMBINE                       (FTM_3_BASSE_ADDRESS + COMBINE_OFFSET)
 
 #endif /* ICU_REGS_H */
