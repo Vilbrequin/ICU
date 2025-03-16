@@ -16,6 +16,7 @@
 #define SC_CPWMS_MASK                   (1 << 5)
 #define SC_TOIE_MASK                    (1 << 8)
 #define SC_CLKS_DISABLE_MASK            (3 << 3)
+#define SC_FLTPLS_MASK                  (0x0F << 24)
 #define CnSC_MSB_MSA_MASK               (3 << 4)
 #define CnSC_CHIE_MASK                  (1 << 6)
 
@@ -26,7 +27,7 @@
 // variables bellow are declared as static global variable to limite access only in the scope of this file !
 static uint8 Icu_Status = ICU_NOT_INITIALIZED;
 static Icu_ChannelConfigType *Icu_Channels_Config_ptr = NULL_PTR;
-static Ftm_Clock_Enabled_Mask = 0;
+static Ftm_Configured_Mask = 0;
 
 static Icu_FTM_ID get_instance_id(Icu_ChannelType channelId)
 {
@@ -39,17 +40,27 @@ static Icu_ChannelType get_Channel_id(Icu_ChannelType channelId)
 
 void Icu_Init(const Icu_ConfigType *ConfigPtr)
 {
+    #if (STD_ON == ICU_DEV_ERROR_DETECT)
+        if((NULL_PTR == ConfigPtr) || (NULL_PTR == ConfigPtr->Icu_ChannelConfig)){
+            Det_ReportError(ICU_MODULE_ID, ICU_MODULE_INSTANCE_ID, ICU_INIT_SID, ICU_E_INIT_FAILED);
+            return;
+        }
+    #endif
     Icu_Channels_Config_ptr = ConfigPtr->Icu_ChannelConfig;
 
-    // Enable the Clk of FTM
+    // Initialize register of the FTM instance
     for (uint8 i = 0; i < ConfigPtr->Icu_NumberOfChannels; i++)
     {
         Icu_FTM_ID FtmId = get_instance_id(Icu_Channels_Config_ptr[i].Icu_ChannelId);
         volatile uint32 *pcc_address = NULL_PTR;
+        volatile uint32 *ftm_mode = NULL_PTR;
+        volatile uint32 *ftm_combine = NULL_PTR;
         volatile uint32 *ftm_sc = NULL_PTR;
+        volatile uint32 *ftm_mod = NULL_PTR;
+        volatile uint32 *ftm_cint = NULL_PTR;
 
         // check if the PCC of the FTM instance is alerady initialized
-        if ((Ftm_Clock_Enabled_Mask) & (1 << FtmId))
+        if ((Ftm_Configured_Mask) & (1 << FtmId))
         {
             continue;
         }
@@ -58,19 +69,37 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         {
         case FTM_0:
             pcc_address = (volatile uint32 *)PCC_FTM_0;
+            ftm_mode = (volatile uint32 *)(FTM_0_MODE);
+            ftm_combine = (volatile uint32 *)(FTM_0_COMBINE);
             ftm_sc = (volatile uint32 *)(FTM_0_SC);
+            ftm_mod = (volatile uint32 *)(FTM_0_MOD);
+            ftm_cint = (volatile uint32 *)(FTM_0_CNTIN);
             break;
         case FTM_1:
             pcc_address = (volatile uint32 *)PCC_FTM_1;
+            ftm_mode = (volatile uint32 *)(FTM_1_MODE);
+            ftm_combine = (volatile uint32 *)(FTM_1_COMBINE);
             ftm_sc = (volatile uint32 *)(FTM_1_SC);
+            ftm_mod = (volatile uint32 *)(FTM_1_MOD);
+            ftm_cint = (volatile uint32 *)(FTM_1_CNTIN);
             break;
         case FTM_2:
             pcc_address = (volatile uint32 *)PCC_FTM_2;
+            ftm_mode = (volatile uint32 *)(FTM_2_MODE);
+            ftm_combine = (volatile uint32 *)(FTM_2_COMBINE);
             ftm_sc = (volatile uint32 *)(FTM_2_SC);
+            ftm_mod = (volatile uint32 *)(FTM_2_MOD);
+            ftm_cint = (volatile uint32 *)(FTM_2_CNTIN);
+            break;
             break;
         case FTM_3:
             pcc_address = (volatile uint32 *)PCC_FTM_3;
+            ftm_mode = (volatile uint32 *)(FTM_3_MODE);
+            ftm_combine = (volatile uint32 *)(FTM_3_COMBINE);
             ftm_sc = (volatile uint32 *)(FTM_3_SC);
+            ftm_mod = (volatile uint32 *)(FTM_3_MOD);
+            ftm_cint = (volatile uint32 *)(FTM_3_CNTIN);
+            break;
             break;
         default:
             // Do Nothing
@@ -80,76 +109,67 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         // Enable the clock for the FTM instance
         *pcc_address |= PCC_CGC_MASK;
 
+        // Disable write protection of the FTM instance
+        *ftm_mode |= MODE_WPDIS_MASK;
+
+        // Disable MCOMBINE (Modified Combine) and DECAPEN (Dual Edge Capture) and COMBINE (Combine Channels) modes
+        *ftm_combine &= ~COMBINE_ICU_MODE_MASK;
+        
+        // Disable the FTM counter CLKS[1:0] = 0:0
+        *ftm_sc &= ~SC_CLKS_DISABLE_MASK;
+        
+        // Set Up Counting mode for the FTM instance
+        *ftm_sc &= ~SC_CPWMS_MASK;
+
+        // FTLPS[27:24] = 0000 to let the channel input after being synchronized by FTM input clock (RM 47.5.5.1)
+        *ftm_sc &= ~SC_FLTPLS_MASK;
+
+        // Define the upper limit of the FTM counter
+        *ftm_mod = FTM_CNT_MAX_VAL;
+
+        // Define the Initial value of the FTM counter
+        *ftm_cint = FTM_CINT_VAL;
+
         // Disable Timer Overflow Interruption of the FTM instance (SWS_Icu_00061)
         *ftm_sc &= ~SC_TOIE_MASK;
 
-        Ftm_Clock_Enabled_Mask |= (1 << FtmId);
+        Ftm_Configured_Mask |= (1 << FtmId);
     }
 
+    // Initialize registers for a specifique channel
     for (uint8 i = 0; i < ConfigPtr->Icu_NumberOfChannels; i++)
     {
         Icu_FTM_ID FtmId = get_instance_id(Icu_Channels_Config_ptr[i].Icu_ChannelId);
         Icu_ChannelType CnId = get_Channel_id(Icu_Channels_Config_ptr[i].Icu_ChannelId);
 
         volatile uint32 *ftm_cnsc = NULL_PTR;
-        volatile uint32 *ftm_sc = NULL_PTR;
         volatile uint32 *ftm_fltr = NULL_PTR;
-        volatile uint32 *ftm_mod = NULL_PTR;
-        volatile uint32 *ftm_cint = NULL_PTR;
-        volatile uint32 *ftm_mode = NULL_PTR;
-        volatile uint32 *ftm_combine = NULL_PTR;
 
         switch (FtmId)
         {
         case FTM_0:
             ftm_cnsc = (volatile uint32 *)((uint8 *)FTM_0_BASSE_ADDRESS + CnSC_OFFSET(CnId)); // the cast to unit8* is to ensure byte-level ptr arithmitic
-            ftm_sc = (volatile uint32 *)(FTM_0_SC);
             ftm_fltr = (volatile uint32 *)(FTM_0_FILTER);
-            ftm_mod = (volatile uint32 *)(FTM_0_MOD);
-            ftm_mode = (volatile uint32 *)(FTM_0_MODE);
-            ftm_cint = (volatile uint32 *)(FTM_0_CNTIN);
-            ftm_combine = (volatile uint32 *)(FTM_0_COMBINE);
             break;
         case FTM_1:
             ftm_cnsc = (volatile uint32 *)((uint8 *)FTM_1_BASSE_ADDRESS + CnSC_OFFSET(CnId));
-            ftm_sc = (volatile uint32 *)(FTM_1_SC);
             ftm_fltr = (volatile uint32 *)(FTM_1_FILTER);
-            ftm_mod = (volatile uint32 *)(FTM_1_MOD);
-            ftm_mode = (volatile uint32 *)(FTM_1_MODE);
-            ftm_cint = (volatile uint32 *)(FTM_1_CNTIN);
-            ftm_combine = (volatile uint32 *)(FTM_1_COMBINE);
             break;
         case FTM_2:
             ftm_cnsc = (volatile uint32 *)((uint8 *)FTM_2_BASSE_ADDRESS + CnSC_OFFSET(CnId));
-            ftm_sc = (volatile uint32 *)(FTM_2_SC);
             ftm_fltr = (volatile uint32 *)(FTM_2_FILTER);
-            ftm_mod = (volatile uint32 *)(FTM_2_MOD);
-            ftm_mode = (volatile uint32 *)(FTM_2_MODE);
-            ftm_cint = (volatile uint32 *)(FTM_2_CNTIN);
-            ftm_combine = (volatile uint32 *)(FTM_2_COMBINE);
-            break;
         case FTM_3:
             ftm_cnsc = (volatile uint32 *)((uint8 *)FTM_3_BASSE_ADDRESS + CnSC_OFFSET(CnId));
-            ftm_sc = (volatile uint32 *)(FTM_3_SC);
             ftm_fltr = (volatile uint32 *)(FTM_3_FILTER);
-            ftm_mod = (volatile uint32 *)(FTM_3_MOD);
-            ftm_mode = (volatile uint32 *)(FTM_3_MODE);
-            ftm_cint = (volatile uint32 *)(FTM_3_CNTIN);
-            ftm_combine = (volatile uint32 *)(FTM_3_COMBINE);
-            break;
         default:
             // Do Nothing
             break;
         }
 
-        // Disable write protection
-        *ftm_mode |= MODE_WPDIS_MASK;
-
-        // Select the Input Capture Mode, the default value of the COMBINE register is already zero but for safety we ensure that neccessary fields are cleared !
-        *ftm_combine &= ~COMBINE_ICU_MODE_MASK;
-        *ftm_sc &= ~SC_CPWMS_MASK;
+        // Clear MSB:MSA bits of the CnSc register to set the input capture mode for the selected channel
         *ftm_cnsc &= ~CnSC_MSB_MSA_MASK;
 
+        // Edge Polarity Selection based on ELSB:ELSA bits of the CnSC register
         switch (Icu_Channels_Config_ptr[i].Icu_Activation)
         {
         case ICU_RISING_EDGE:
@@ -170,15 +190,6 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
             break;
         }
         
-        // Disable the FTM counter
-        *ftm_cnsc &= ~SC_CLKS_DISABLE_MASK;
-
-        // Define the upper limit of the FTM counter
-        *ftm_mod = FTM_CNT_MAX_VAL;
-
-        // Define the Initial value of the FTM counter
-        *ftm_cint = FTM_CINT_VAL;
-
         /*
          * [SWS_Icu_00061]: The function Icu_Init shall disable all notifications :
          * disable interruptions by clearing the CHIE bit of the correspondent Channel CnSC Reg
@@ -208,13 +219,14 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         Icu_Channels_Config_ptr[i].Icu_Mode = ICU_MODE_NORMAL;
     }
     // Start the FTM counter
+    Ftm_Configured_Mask = 0;
     for (uint8 i = 0; i < ConfigPtr->Icu_NumberOfChannels; i++)
     {
         Icu_FTM_ID FtmId = get_instance_id(Icu_Channels_Config_ptr[i].Icu_ChannelId);
         volatile uint32 *ftm_sc = NULL_PTR;
 
         // check if the PCC of the FTM instance is alerady initialized
-        if ((Ftm_Clock_Enabled_Mask) & (1 << FtmId))
+        if ((Ftm_Configured_Mask) & (1 << FtmId))
         {
             continue;
         }
@@ -239,6 +251,7 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         }
         // // Select system clock as timer source (CLKS = 01)
         *ftm_sc |= (1 << 3);
+        Ftm_Configured_Mask |= (1 << FtmId);
     }
     Icu_Status = ICU_INITIALIZED;
 }

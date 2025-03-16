@@ -11,9 +11,9 @@
 /****************************************************************************************************/
 /*                   MACROS: used in error detection & get version Api                              */
 /****************************************************************************************************/
-#define DIO_MODULE_ID                              (122U)
-#define DIO_MODULE_INSTANCE_ID                     (0U)
-#define DIO_MODULE_VENDOR_ID                       (0xD0) /* My own vendor id (company dependent): highest vid is 0xC7(Real-Time Innovations)*/
+#define ICU_MODULE_ID                              (122U)
+#define ICU_MODULE_INSTANCE_ID                     (0U)
+#define ICU_MODULE_VENDOR_ID                       (0xD0) /* My own vendor id (company dependent): highest vid is 0xC7(Real-Time Innovations)*/
 
 /* Module version 1.0.0 */
 #define ICU_MODULE_MAJOR_VERSION                   (1U)
