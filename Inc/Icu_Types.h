@@ -153,6 +153,29 @@ typedef uint8 Icu_ClockPrescalerType;
 #define ICU_CLK_PRESCALER_7                 (Icu_ClockPrescalerType)128U
 
 /*
+ * Type used to selects the clock prescaler used in the FTM filters (Only for Channels 0 to 3 of each FTM instance)
+*/
+typedef uint8 Icu_FilterPrescalerType;
+#define ICU_FLTR_PRESCALER_0                (Icu_FilterPrescalerType)0U
+#define ICU_FLTR_PRESCALER_1                (Icu_FilterPrescalerType)1U
+#define ICU_FLTR_PRESCALER_2                (Icu_FilterPrescalerType)2U
+#define ICU_FLTR_PRESCALER_3                (Icu_FilterPrescalerType)3U
+#define ICU_FLTR_PRESCALER_4                (Icu_FilterPrescalerType)4U
+#define ICU_FLTR_PRESCALER_5                (Icu_FilterPrescalerType)5U
+#define ICU_FLTR_PRESCALER_6                (Icu_FilterPrescalerType)6U
+#define ICU_FLTR_PRESCALER_7                (Icu_FilterPrescalerType)7U
+#define ICU_FLTR_PRESCALER_8                (Icu_FilterPrescalerType)8U
+#define ICU_FLTR_PRESCALER_9                (Icu_FilterPrescalerType)9U
+#define ICU_FLTR_PRESCALER_10               (Icu_FilterPrescalerType)10U
+#define ICU_FLTR_PRESCALER_11               (Icu_FilterPrescalerType)11U
+#define ICU_FLTR_PRESCALER_12               (Icu_FilterPrescalerType)12U
+#define ICU_FLTR_PRESCALER_13               (Icu_FilterPrescalerType)13U
+#define ICU_FLTR_PRESCALER_14               (Icu_FilterPrescalerType)14U
+#define ICU_FLTR_PRESCALER_15               (Icu_FilterPrescalerType)15U
+
+
+typedef uint8 Icu_ChannelFilterValueType;
+/*
  * Index : 8.2.4 [SWS_Icu_00280]
  * Description : This type contains initialization data.
  */
@@ -167,6 +190,8 @@ struct Icu_ChannelConfigType{
     Icu_ChannelType Icu_ChannelId;
     Icu_MeasurementModeType Icu_MeasurementMode;
     Icu_ActivationType Icu_Activation;
+    Icu_FilterPrescalerType Icu_FilterPrescaler;
+    Icu_ChannelFilterValueType Icu_ChannelFilterValue;
     Icu_ClockPrescalerType Icu_ClockPrescaler;
     IcuSignalEdgeDetectionType IcuSignalEdgeDetection;
     IcuSignalMeasurementType IcuSignalMeasurement;

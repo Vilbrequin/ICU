@@ -16,7 +16,8 @@
 #define SC_CPWMS_MASK                   (1 << 5)
 #define SC_TOIE_MASK                    (1 << 8)
 #define SC_CLKS_DISABLE_MASK            (3 << 3)
-#define SC_FLTPLS_MASK                  (0x0F << 24)
+#define SC_FLTPLS_MASK                  (0x0F << 24) // to clear the FLTPS bits
+#define SC_PS_MASK                      (0x07 << 0) // to clear the PS bits 
 #define CnSC_MSB_MSA_MASK               (3 << 4)
 #define CnSC_CHIE_MASK                  (1 << 6)
 
@@ -27,7 +28,7 @@
 // variables bellow are declared as static global variable to limite access only in the scope of this file !
 static uint8 Icu_Status = ICU_NOT_INITIALIZED;
 static Icu_ChannelConfigType *Icu_Channels_Config_ptr = NULL_PTR;
-static Ftm_Configured_Mask = 0;
+static uint8 Ftm_Configured_Mask = 0;
 
 static Icu_FTM_ID get_instance_id(Icu_ChannelType channelId)
 {
@@ -52,6 +53,9 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
     for (uint8 i = 0; i < ConfigPtr->Icu_NumberOfChannels; i++)
     {
         Icu_FTM_ID FtmId = get_instance_id(Icu_Channels_Config_ptr[i].Icu_ChannelId);
+        Icu_FilterPrescalerType FTM_fltr_prescaler = Icu_Channels_Config_ptr[i].Icu_FilterPrescaler;
+        Icu_ClockPrescalerType FTM_clk_prescaler = Icu_Channels_Config_ptr[i].Icu_ClockPrescaler;
+
         volatile uint32 *pcc_address = NULL_PTR;
         volatile uint32 *ftm_mode = NULL_PTR;
         volatile uint32 *ftm_combine = NULL_PTR;
@@ -91,7 +95,6 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
             ftm_mod = (volatile uint32 *)(FTM_2_MOD);
             ftm_cint = (volatile uint32 *)(FTM_2_CNTIN);
             break;
-            break;
         case FTM_3:
             pcc_address = (volatile uint32 *)PCC_FTM_3;
             ftm_mode = (volatile uint32 *)(FTM_3_MODE);
@@ -99,7 +102,6 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
             ftm_sc = (volatile uint32 *)(FTM_3_SC);
             ftm_mod = (volatile uint32 *)(FTM_3_MOD);
             ftm_cint = (volatile uint32 *)(FTM_3_CNTIN);
-            break;
             break;
         default:
             // Do Nothing
@@ -121,8 +123,15 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         // Set Up Counting mode for the FTM instance
         *ftm_sc &= ~SC_CPWMS_MASK;
 
-        // FTLPS[27:24] = 0000 to let the channel input after being synchronized by FTM input clock (RM 47.5.5.1)
-        *ftm_sc &= ~SC_FLTPLS_MASK;
+        // FTLPS[27:24]
+        *ftm_sc &= ~SC_FLTPLS_MASK; // clear the existing filter prescaler value
+        *ftm_sc |= (FTM_fltr_prescaler << 24); // set the new filter prescaler value
+        
+
+        // PS[2:0]
+        *ftm_sc &= ~SC_PS_MASK; // clear the existing clock prescaler value
+        *ftm_sc |= (FTM_clk_prescaler << 0); // set the new clock prescaler value
+        
 
         // Define the upper limit of the FTM counter
         *ftm_mod = FTM_CNT_MAX_VAL;
@@ -158,9 +167,11 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         case FTM_2:
             ftm_cnsc = (volatile uint32 *)((uint8 *)FTM_2_BASSE_ADDRESS + CnSC_OFFSET(CnId));
             ftm_fltr = (volatile uint32 *)(FTM_2_FILTER);
+            break;
         case FTM_3:
             ftm_cnsc = (volatile uint32 *)((uint8 *)FTM_3_BASSE_ADDRESS + CnSC_OFFSET(CnId));
             ftm_fltr = (volatile uint32 *)(FTM_3_FILTER);
+            break;
         default:
             // Do Nothing
             break;
@@ -189,15 +200,12 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         default:
             break;
         }
-        
         /*
          * [SWS_Icu_00061]: The function Icu_Init shall disable all notifications :
          * disable interruptions by clearing the CHIE bit of the correspondent Channel CnSC Reg
          */
-        if (1 == Icu_Channels_Config_ptr[i].Icu_InterruptEnable)
-        {
-            *ftm_cnsc &= ~CnSC_CHIE_MASK;
-        }
+        // fix: All interrupts must be disabled not only those enabled in configuration !
+        *ftm_cnsc &= ~CnSC_CHIE_MASK;
         /*
          * [SWS_Icu_00121] ⌈The function Icu_Init shall disable the wakeup-capability of all channels.
          * if the channel is wake-up capable then call the Ecu state Manager disable it.
@@ -206,7 +214,12 @@ void Icu_Init(const Icu_ConfigType *ConfigPtr)
         {
             EcuM_ClearWakeupEvent(Icu_Channels_Config_ptr[i].IcuWakeup.IcuChannelWakeupInfo);
         }
-
+        // Set the filter value for the corresponding channel (only for Channles 0 to 3 in each FTM instance)
+        if((1 == Icu_Channels_Config_ptr[i].Icu_FilterEnable) && (CnId <= 3)){
+            Icu_ChannelFilterValueType filter_value = Icu_Channels_Config_ptr[i].Icu_ChannelFilterValue;
+            *ftm_fltr &= ~(0x0F << (CnId * 4)); // clear the existing filer value
+            *ftm_fltr |= (filter_value << (CnId * 4)); // then Set the new filter value
+        }
         /*
          * [SWS_Icu_00040] ⌈The function Icu_Init shall set all used ICU channels to status ICU_IDLE.
          * So that mean at init no activation edge has been detected yet
