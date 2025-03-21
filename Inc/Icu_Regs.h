@@ -36,14 +36,14 @@ enable, FTM configuration, clock source, filter prescaler, and prescaler factor.
 
 
 /*
-Counter (CTN) Base Address
+Counter (CNT) Base Address
 The CNT register contains the FTM counter value. 
 */
-#define CTN_OFFSET                          0x04
-#define FTM_0_CTN                           (FTM_0_BASSE_ADDRESS + CTN_OFFSET)
-#define FTM_1_CTN                           (FTM_1_BASSE_ADDRESS + CTN_OFFSET)
-#define FTM_2_CTN                           (FTM_2_BASSE_ADDRESS + CTN_OFFSET)
-#define FTM_3_CTN                           (FTM_3_BASSE_ADDRESS + CTN_OFFSET)
+#define CNT_OFFSET                          0x04
+#define FTM_0_CNT                           (FTM_0_BASSE_ADDRESS + CNT_OFFSET)
+#define FTM_1_CNT                           (FTM_1_BASSE_ADDRESS + CNT_OFFSET)
+#define FTM_2_CNT                           (FTM_2_BASSE_ADDRESS + CNT_OFFSET)
+#define FTM_3_CNT                           (FTM_3_BASSE_ADDRESS + CNT_OFFSET)
 
 /*
 Modulo (MOD) Register
